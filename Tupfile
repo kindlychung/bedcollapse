@@ -3,4 +3,4 @@ include_rules
 # : foreach src/*.cpp  |> g++ %f $(CFLAGS) -c -o %o |> obj/%B.o
 # : main.cpp  |> clang %f $(CFLAGS) -c -o %o |> obj/%B.o
 # : |> clang main.cpp $(CFLAGS) -lboost_program_options -lboost_regex -lboost_system -lboost_filesystem -larmadillo -larpack -llapack -lblas -o %o |> binmain
-: |> clang++ main.cpp $(CFLAGS)  -lboost_system -lboost_filesystem -o %o |> binmain
+: |> clang++ main.cpp $(CFLAGS) $(mainflags)  -o %o |> binmain

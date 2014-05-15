@@ -2,6 +2,8 @@ CFLAGS += -Wall
 CFLAGS += -O3
 CFLAGS += -std=c++11
 CFLAGS += -D_FILE_OFFSET_BITS=64
+mainflags += -lboost_system 
+mainflags += -lboost_filesystem
 !cc =    |> g++ %f $(CFLAGS)       -c -o %o |> %B.o
 !ccpic = |> g++ %f $(CFLAGS) -fPIC -c -o %o |> %B.o
 !so = |> g++ %f -shared -o %o |>

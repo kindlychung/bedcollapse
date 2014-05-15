@@ -1,10 +1,10 @@
 #include <fstream>
 #include<algorithm>
 #include <string>
-int ctline(std::string fn)
+off_t countlines(std::string fn)
 {
     std::ifstream aFile(fn);
-    int lines_count =0;
+    off_t lines_count =0;
     std::string line;
     while (std::getline(aFile , line))
         ++lines_count;

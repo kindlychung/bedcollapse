@@ -1,49 +1,13 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
+#include <math.h>
 #include "src/countlines.h"
+#include "src/collgen_memo.h"
+#include "src/util.h"
 
-
-#include <stdio.h>
-#include <sys/stat.h>
 using namespace std;
-void dump_buffer(unsigned char *buffer, off_t buffer_size)
-{
-    // off_t buffer_size = sizeof(buffer)/sizeof(buffer[0]);
-    // cout << "buffer size: " << buffer_size << endl;
-    off_t i;
-    for(i = 0;i < buffer_size; ++i)
-    {
-     printf("%02x \n", ((unsigned char *)buffer)[i]);
-    }
-    printf("\n");
-}
 
-void ReadFile(std::string fn)
-{
-	FILE *file;
-	file = fopen(fn.c_str(), "rb");
-	if (!file)
-	{
-		fprintf(stderr, "Unable to open file %s", fn.c_str());
-		return;
-	}
-	// struct stat64 fsStatBuf;
-	// stat64(fn.c_str(), &fsStatBuf);
-	// off_t fileLen = fsStatBuf.st_size;
-    unsigned char buffer[1];
-	if (!buffer)
-	{
-		fprintf(stderr, "Memory error!");
-        fclose(file);
-		return;
-	}
-    fseeko(file, 3, SEEK_SET);
-	fread(buffer, 1, 1, file);
-	fclose(file);
-    dump_buffer(buffer, 1);
-}
-
-void readOnePerson(std::string fn) {
+void bedColl(std::string fn, std::string outfn, off_t nshift) {
     boost::filesystem::path fpath(fn);
     auto fstem = fpath.stem();
     auto fbranch = fpath.branch_path();
@@ -53,18 +17,44 @@ void readOnePerson(std::string fn) {
     auto bedfn = fbed.string();
     auto bimfn = fbim.string();
     auto famfn = ffam.string();
-    int nsnp = ctline(bimfn);
-    int nindiv = ctline(famfn);
-    using namespace std;
-    cout << "nsnp: " << nsnp << endl;
-    cout << "nindiv: " << nindiv << endl;
+
+    off_t nsnp = countlines(bimfn);
+    off_t nindiv = countlines(famfn);
+    off_t bytes_snp = ceil(nindiv / 4.0);
+    off_t bytes_read = bytes_snp * nsnp;
+    // see the documentation picture on flickr
+    off_t bytes_shift = bytes_snp * nshift;
+    if(bytes_shift > bytes_read) {throw "Shift too large!";}
+    off_t bytes_left = bytes_read - bytes_shift;
+
+    // read snps into buffer, from the bed file
+	FILE *file;
+	file = fopen(bedfn.c_str(), "rb"); if (!file) { fprintf(stderr, "Unable to open file %s", fn.c_str()); }
+    unsigned char buffer[bytes_read]; if (!buffer) { fprintf(stderr, "Memory error!"); fclose(file); }
+    fseeko(file, 3, SEEK_SET);
+	fread(buffer, bytes_read, 1, file);
+
+    unsigned char collres[bytes_read];
+    // initialize with NA
+    std::fill_n(collres, bytes_read, 0x55);
+    for(off_t i=0; i<bytes_left; i++)
+    {
+        // collapse genotype using the memoization array
+        collres[i] = collgen[buffer[i]][buffer[i+bytes_shift]];
+    }
+
+    FILE *outfile = fopen(outfn.c_str(), "w+");
+    fwrite(magicbits, 3, 1, outfile);
+    fwrite(collres, bytes_read, 1, outfile);
+    fclose(outfile);
 }
 
 int main(int argc, char const* argv[])
 {
-    using namespace std;
-    readOnePerson("test");
-    std::string fn = "test.bed";
-    ReadFile(fn);
+    bedColl("test", "/tmp/out.bed", 1);
+    // std::string fn = "test.bed";
+    // ReadFile(fn);
+    // srand(time(NULL));
+    // testcollgenarray();
     return 0;
 }

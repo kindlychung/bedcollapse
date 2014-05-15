@@ -1,10 +1,10 @@
 PLINK v1.90b1 64-bit (11 May 2014)
 5 arguments: --file test --make-bed --out test
 Hostname: kylenovo
-Working directory: /home/kaiyin/Dropbox/bin/bed2bin
-Start time: Tue May 13 22:36:31 2014
+Working directory: /home/kaiyin/Dropbox/workspace/bedcollapse
+Start time: Thu May 15 13:53:14 2014
 
-Random number seed: 1400013391
+Random number seed: 1400154794
 5832 MB RAM detected; reserving 2916 MB for main workspace.
 Scanning .ped file... done.
 Performing single-pass .bed write (3 variants, 6 people).
@@ -20,4 +20,4 @@ Among remaining phenotypes, 3 are cases and 0 are controls.  (3 phenotypes are
 missing.)
 --make-bed to test.bed + test.bim + test.fam ... done.
 
-End time: Tue May 13 22:36:31 2014
+End time: Thu May 15 13:53:14 2014
